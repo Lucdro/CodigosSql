@@ -1,0 +1,21 @@
+declare @linhas int;
+set @linhas = 100;
+declare @consulta table
+(
+codigoProduto int,
+codigoGrupoProduto int,
+descricao varchar(max),
+unidadeMedida varchar(max),
+precoVenda decimal(15,3)
+)
+insert into @consulta
+SELECT TOP (@linhas) p.codigoProduto,p.codigoGrupoProduto,p.descricao,p.unidadeMedida,i.valor[precoVenda]	
+FROM [CybercomCSharpDev].[dbo].[tblProduto] as p left join tblTabelaPrecoItem i on p.codigoProduto = i.CodigoProduto and p.codigoEmpresa = i.codigoEmpresa
+where p.codigoEmpresa = 1 and descricao like '%%'  
+and i.nomeTabela is not null
+set @linhas = @linhas - @@rowcount
+
+select * from @consulta union
+SELECT TOP (@linhas) codigoProduto,codigoGrupoProduto,descricao,unidadeMedida,precoVenda FROM [CybercomCSharpDev].[dbo].[tblProduto] 
+where codigoEmpresa = 1 and descricao like '%%'
+and codigoProduto not in (select codigoProduto from tblTabelaPrecoItem where codigoEmpresa = 1)
